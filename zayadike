@@ -19,7 +19,7 @@ local function createGui()
     local buttonInvisible = Instance.new("TextButton")
     buttonInvisible.Size = UDim2.new(0, 200, 0, 50)
     buttonInvisible.Position = UDim2.new(0.5, -100, 0, 20)  -- Top middle of the screen
-    buttonInvisible.Text = "Invisible"
+    buttonInvisible.Text = "UnderGround"
     buttonInvisible.TextSize = 24
     buttonInvisible.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
     buttonInvisible.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -59,7 +59,7 @@ local function createGui()
                 handle:Destroy()
             end
 
-            buttonInvisible.Text = "Invisible"
+            buttonInvisible.Text = "UnderGround"
         else
             -- Save the current position when going invisible (only save the X, Y, Z position for reference)
             currentPosition = player.Character.HumanoidRootPart.Position
