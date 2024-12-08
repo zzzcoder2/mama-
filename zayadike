@@ -1,0 +1,142 @@
+local player = game.Players.LocalPlayer
+local camera = game.Workspace.CurrentCamera
+local originalPosition
+local currentPosition
+local isInvisible = false
+local handle
+local weld
+local normalHeight = 5  -- Set the height where the player should appear when visible
+local currentCameraRotation = math.rad(90)  -- Start with 90 degrees rotation
+
+-- Function to create the GUI buttons
+local function createGui()
+    -- Create a ScreenGui to hold the buttons
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Parent = player.PlayerGui
+    screenGui.Name = "InvisibilityGUI"
+
+    -- Create the "Invisible" button
+    local buttonInvisible = Instance.new("TextButton")
+    buttonInvisible.Size = UDim2.new(0, 200, 0, 50)
+    buttonInvisible.Position = UDim2.new(0.5, -100, 0, 20)  -- Top middle of the screen
+    buttonInvisible.Text = "Invisible"
+    buttonInvisible.TextSize = 24
+    buttonInvisible.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    buttonInvisible.TextColor3 = Color3.fromRGB(255, 255, 255)
+    buttonInvisible.Parent = screenGui
+
+    -- Create the "Rotate" button
+    local buttonRotate = Instance.new("TextButton")
+    buttonRotate.Size = UDim2.new(0, 200, 0, 50)
+    buttonRotate.Position = UDim2.new(0.5, -100, 0, 80)  -- Positioned below the Invisible button
+    buttonRotate.Text = "Rotate"
+    buttonRotate.TextSize = 24
+    buttonRotate.BackgroundColor3 = Color3.fromRGB(0, 0, 255)
+    buttonRotate.TextColor3 = Color3.fromRGB(255, 255, 255)
+    buttonRotate.Parent = screenGui
+
+    -- Function to toggle between visible and invisible states
+    local function toggleInvisibility()
+        if isInvisible then
+            -- When going visible, use the current position to place the player above ground
+            local newPosition = Vector3.new(player.Character.HumanoidRootPart.Position.X, normalHeight, player.Character.HumanoidRootPart.Position.Z)
+            
+            -- Get the camera's current yaw (rotation around the Y axis)
+            local cameraYaw = camera.CFrame.LookVector
+            local angle = math.atan2(cameraYaw.X, cameraYaw.Z)  -- Calculate angle based on the LookVector
+            
+            -- Invert the angle by adding 180 degrees (math.pi)
+            local invertedAngle = angle + math.pi
+            
+            -- Set the player's position and rotation to match the camera's inverted rotation
+            player.Character.HumanoidRootPart.CFrame = CFrame.new(newPosition) * CFrame.Angles(0, invertedAngle, 0)
+            
+            -- Re-enable the camera subject to the player
+            camera.CameraSubject = player.Character.Humanoid
+            
+            -- Destroy the handle if it's created
+            if handle then
+                handle:Destroy()
+            end
+
+            buttonInvisible.Text = "Invisible"
+        else
+            -- Save the current position when going invisible (only save the X, Y, Z position for reference)
+            currentPosition = player.Character.HumanoidRootPart.Position
+            
+            -- Move character below the map (height -7) while keeping movement active
+            player.Character.HumanoidRootPart.CFrame = CFrame.new(currentPosition.X, -7, currentPosition.Z)
+            
+            -- Create the "handle" to keep the camera above the map
+            if not handle then
+                handle = Instance.new("Part", workspace)
+                handle.Name = "Handle"
+                handle.Size = Vector3.new(2, 1, 1)
+                handle.Transparency = 1
+                handle.CanCollide = false
+                
+                -- Weld the handle to the player's HumanoidRootPart so it moves with the player
+                weld = Instance.new("Weld", handle)
+                weld.Part0 = handle
+                weld.Part1 = player.Character.HumanoidRootPart
+                weld.C0 = CFrame.new(0, 10, 0)  -- Position the camera's "handle" above the character
+                
+                -- Position the camera above the map (stay above the ground even when under it)
+                camera.CameraSubject = handle
+            end
+
+            buttonInvisible.Text = "Visible"
+        end
+
+        isInvisible = not isInvisible
+    end
+
+    -- Function to update the camera's position when the player is invisible
+    local function updateCameraPosition()
+        if isInvisible and handle then
+            -- Keep the handle positioned above the player at all times while moving
+            handle.CFrame = player.Character.HumanoidRootPart.CFrame * CFrame.new(0, 10, 0)
+            
+            -- Make the camera always face the current rotation
+            local cameraPosition = camera.CFrame.Position
+            local newCameraCFrame = CFrame.new(cameraPosition.X, player.Character.HumanoidRootPart.Position.Y + 10, cameraPosition.Z) * CFrame.Angles(0, currentCameraRotation, 0)
+            camera.CFrame = newCameraCFrame
+        end
+    end
+
+    -- Function to rotate the camera through the sequence of angles: 90, 0, 260, 180
+    local function rotateCamera()
+        if isInvisible then
+            -- Cycle through the rotations in order: 90 -> 0 -> 260 -> 180 -> 90 -> ...
+            if currentCameraRotation == math.rad(90) then
+                currentCameraRotation = math.rad(0)
+            elseif currentCameraRotation == math.rad(0) then
+                currentCameraRotation = math.rad(270)
+            elseif currentCameraRotation == math.rad(270) then
+                currentCameraRotation = math.rad(180)
+            else
+                currentCameraRotation = math.rad(90)
+            end
+        end
+    end
+
+    -- Connect the button click to the toggle function for invisibility
+    buttonInvisible.MouseButton1Click:Connect(toggleInvisibility)
+
+    -- Connect the button click to the rotate camera function
+    buttonRotate.MouseButton1Click:Connect(rotateCamera)
+
+    -- Update the camera position continuously when invisible
+    game:GetService("RunService").RenderStepped:Connect(updateCameraPosition)
+end
+
+-- Create the GUI initially
+createGui()
+
+-- Recreate the GUI on character reset
+player.CharacterAdded:Connect(function()
+    -- Wait until the character is fully loaded
+    wait(2)
+    -- Recreate the GUI
+    createGui()
+end)
