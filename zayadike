@@ -18,7 +18,7 @@ local function createGui()
     -- Create the "Invisible" button
     local buttonInvisible = Instance.new("TextButton")
     buttonInvisible.Size = UDim2.new(0, 200, 0, 50)
-    buttonInvisible.Position = UDim2.new(0.5, -100, 0, 20)  -- Top middle of the screen
+    buttonInvisible.Position = UDim2.new(0.5, -100, 0, 5)  -- Top middle of the screen
     buttonInvisible.Text = "UnderGround"
     buttonInvisible.TextSize = 24
     buttonInvisible.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
@@ -28,7 +28,7 @@ local function createGui()
     -- Create the "Rotate" button
     local buttonRotate = Instance.new("TextButton")
     buttonRotate.Size = UDim2.new(0, 200, 0, 50)
-    buttonRotate.Position = UDim2.new(0.5, -100, 0, 80)  -- Positioned below the Invisible button
+    buttonRotate.Position = UDim2.new(0.5, -100, 0, 50)  -- Positioned below the Invisible button
     buttonRotate.Text = "Rotate"
     buttonRotate.TextSize = 24
     buttonRotate.BackgroundColor3 = Color3.fromRGB(0, 0, 255)
